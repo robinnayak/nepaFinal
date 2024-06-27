@@ -20,7 +20,7 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 # ALLOWED_HOSTS = []
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
-# CSRF_TRUSTED_ORIGINS = ['https://nepa.vercel.app/']
+CSRF_TRUSTED_ORIGINS = ['https://nepafinal.vercel.app/']
 
 # Application definition
 
@@ -34,6 +34,9 @@ INSTALLED_APPS = [
     
     'api',
     'authentication',
+    'passenger',
+    'driver',
+    'organization',
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
