@@ -79,72 +79,7 @@ class RegistrationView(APIView):
 
     def _generate_token_for_user(self, user):
         """Generate JWT token for a user."""
-        return get_tokens_for_user(user)    
-
-
-# class RegistrationView(APIView):
-#     renderer_classes = [UserRenderer]
-#     def get(self,request):
-#         users = CustomUser.objects.all()   
-#         try: 
-#             serializer = CustomUserSerializer(users,many=True)  
-#             return Response((serializer.data),status.HTTP_200_OK)
-#         except Exception as e:
-#             return Response(str(e),status.HTTP_400_BAD_REQUEST) 
-        
-#     def post(self, request):
-#         if request.data["is_driver"]:
-#             if request.data['license_number'] is None:
-#                 raise serializers.ValidationError("licence field is required for the Driver registraion")
-#             license_number = request.data['license_number']
-       
-            
-        
-#         serializer = CustomUserSerializer(data=request.data)
-#         try:
-#             if serializer.is_valid():
-#                 user = serializer.save()
-#                 if user.is_organization:
-#                     print("organizaton...")
-#                     group = Group.objects.get(name='organization')
-#                     user.groups.add(group)
-#                     organization = models.Organization.objects.create(user=user)
-#                     print("organization 1: ",organization)
-#                     if organization is not None:
-#                         token = get_tokens_for_user(user)
-                    
-#                     print("organization",organization)
-#                 elif user.is_driver:
-#                     print("driver...")
-#                     group = Group.objects.get(name='driver')
-#                     user.groups.add(group)
-#                     if license_number:    
-#                         driver = models.Driver.objects.create(user=user,license_number=license_number)
-#                         print("driver 1: ",driver)
-#                         if driver is not None:
-#                             token = get_tokens_for_user(user)
-#                         print("driver",driver)
-#                     # validatio error 
-#                     else:
-#                         raise serializers.ValidationError("licence field is required for the Driver registraion")
-#                 else:
-#                     group = Group.objects.get(name='passenger')
-#                     user.groups.add(group)
-#                     token = get_tokens_for_user(user)
-#                 message = {
-#                     'message': 'User created successfully',
-#                     'user': serializer.data,
-#                     'token': token
-#                 }
-#                 return Response(message, status=status.HTTP_201_CREATED)
-#             else:
-#                 if 'non_field_errors' in serializer.errors:
-#                     return Response(serializer.errors['non_field_errors'], status=status.HTTP_400_BAD_REQUEST)
-#                 else:
-#                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#         except Exception as e:
-#             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
-        
+        return get_tokens_for_user(user)            
 class LoginView(APIView):
     def post(self, request):
         try:
@@ -308,3 +243,22 @@ class DriverDetailView(APIView):
             'message': 'Driver deleted successfully'
         }
         return Response(message, status=status.HTTP_200_OK) 
+    
+
+class OrganizationDriverView(APIView):
+    def get(self,request):
+        if request.user.is_organization:
+            try:
+                drivers = models.Driver.objects.filter(organization__user=request.user).exists()
+                if drivers:
+                    drivers = models.Driver.objects.filter(organization__user=request.user)
+                    serializer = DriverSerializer(drivers,many=True)
+                    return Response(serializer.data,status=status.HTTP_200_OK)
+                else:
+                    return Response({"error": "No drivers found for the organization"}, status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "You are not authorized to view this resource"}, status=status.HTTP_403_FORBIDDEN)
+        
+        

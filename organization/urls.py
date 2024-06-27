@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from authentication.views import  OrganizationDetailView,OrganizationView
+from authentication.views import  OrganizationDetailView,OrganizationView, OrganizationDriverView
 urlpatterns = [
     path("",  OrganizationView.as_view(), name="org"),
     path('<int:pk>/',OrganizationDetailView.as_view(), name='organization'),
@@ -14,5 +14,5 @@ urlpatterns = [
     path('booking/<str:booking_id>/',views.BookingDetailView.as_view(), name='booking_detail' ),
     path('ticket/',views.TicketView.as_view(), name='ticket' ),
     path('ticket/<str:ticket_id>/',views.TicketDetailView.as_view(), name='ticket_detail' ),
-
+    path('driver/',OrganizationDriverView.as_view(), name='driver' ),
 ]
