@@ -7,6 +7,7 @@ from .renderers import UserRenderer
 from django.contrib.auth import authenticate,login,logout
 
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated   
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken  
 from rest_framework import serializers
@@ -215,7 +216,9 @@ class OrganizationView(APIView):
     
     
 class OrganizationDetailView(APIView):
+    permission_classes = [IsAuthenticated]
     renderer_classes = [UserRenderer]
+    # authentication_classes = [isAuthenticated]
     def get(self,request,pk):
         user = models.CustomUser.objects.get(id=pk)
         organization = models.Organization.objects.get(user=user)
@@ -246,8 +249,18 @@ class OrganizationDetailView(APIView):
         }
         return Response(message, status=status.HTTP_200_OK)
     
+    
+class DriverView(APIView):
+    
+    def get(self,request):
+        drivers = models.Driver.objects.all()
+        serializer = DriverSerializer(drivers,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    
 class DriverDetailView(APIView):
     renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    
     def get(self,request,pk):
         user = models.CustomUser.objects.get(id=pk)
         driver = models.Driver.objects.get(user=user)
