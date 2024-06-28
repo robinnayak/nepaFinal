@@ -126,7 +126,7 @@ class VehicleDetailView(APIView):
             elif request.user.is_organization:
                 check_org = Vehicle.objects.filter(organization__user__email=request.user.email).exists()
                 if check_org:
-                    vehicle = Vehicle.objects.get(registration_number=reg_id,organization__user__email=request.data['email'])
+                    vehicle = Vehicle.objects.get(registration_number=reg_id)
                     vehicle.delete()
                 return Response({"message":"Vehicle deleted successfully"},status.HTTP_200_OK)
         except Vehicle.DoesNotExist:
