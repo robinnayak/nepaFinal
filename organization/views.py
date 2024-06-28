@@ -14,8 +14,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 # import stripe
 
-
-
 class VehicleView(APIView):
     permission_classes = [IsAuthenticated]
     

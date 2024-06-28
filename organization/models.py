@@ -23,7 +23,6 @@ class Vehicle(models.Model):
     vehicle_type = models.CharField(max_length=10, choices=REGISTRATION_CHOICES)
     company_made = models.CharField(max_length=50, blank=True)
     model = models.CharField(max_length=50, blank=True)
-    age = models.IntegerField(default=18)
     color = models.CharField(max_length=30, default="black")
     seating_capacity = models.PositiveIntegerField(default=0)
     license_plate_number = models.CharField(max_length=10, unique=True)
