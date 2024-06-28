@@ -29,15 +29,16 @@ class VehicleSerializer(serializers.ModelSerializer):
 
         vehicle = Vehicle.objects.create(**validated_data)
         return vehicle
-    
-    def update(self,instance,validated_data):
-        # veh_id = self._generate_random_string()
-        # reg_id = self._generate_registration_number(veh_id,validated_data['organization'].user.username)
-        instance.registration_number = instance.registration_number
+
+    def update(self, instance, validated_data):
+        validated_data.pop('registration_number',None)
+        validated_data.pop('license_plate_number',None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
         instance.save()
         return instance
-    
-    
+
     def _assign_organization_and_driver(self, validated_data, org_email, dri_license, check_driver):
         try:
             if check_driver and dri_license:
@@ -50,17 +51,17 @@ class VehicleSerializer(serializers.ModelSerializer):
                 org_mail = Organization.objects.get(user__email=org_email)
                 validated_data['organization'] = org_mail
             else:
-                return ValidationError({"message": "Organization not found"})
+                raise ValidationError({"message": "Organization not found"})
 
         except Organization.DoesNotExist:
             return Response({"message": "Organization not found"}, status=status.HTTP_404_NOT_FOUND)
         except Driver.DoesNotExist:
             return Response({"message": "Driver not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return validated_data
-    
+
     @staticmethod
     def _generate_random_string(length=10):
         characters = string.ascii_letters + string.digits
@@ -71,7 +72,6 @@ class VehicleSerializer(serializers.ModelSerializer):
     def _generate_registration_number(id, username):
         prefix = f"{id}{username}"
         return prefix.upper()
-
 
 class TripSerializer(serializers.ModelSerializer):
     organization = OrganizationSerializer(read_only=True)
@@ -89,6 +89,7 @@ class TripSerializer(serializers.ModelSerializer):
             return Response({"message": "Organization not found"}, status=status.HTTP_404_NOT_FOUND)
         trip = Trip.objects.create(**validated_data)
         return trip
+    
     
 class TripPriceSerializer(serializers.ModelSerializer):
     trip = TripSerializer(read_only=True)
