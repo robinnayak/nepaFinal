@@ -149,7 +149,7 @@ class TripView(APIView):
             return Response(str(e),status.HTTP_400_BAD_REQUEST)
         
     def post(self,request):
-        if request.user.is_organization:    
+        if request.user.is_organization:   
             serializer = serializers.TripSerializer(data=request.data,context={'org_email':request.user.email})
             try:
                 if serializer.is_valid():

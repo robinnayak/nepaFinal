@@ -58,8 +58,8 @@ class Trip(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_query_name="trip_organization")
     from_location = models.CharField(max_length=100)
     to_location = models.CharField(max_length=100)
-    start_datetime = models.DateTimeField()
-    end_datetime = models.DateTimeField()
+    start_datetime = models.DateTimeField(auto_now_add=True)
+    end_datetime = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
         prefix = f"{self.from_location[:3]}{self.to_location[:3]}"
@@ -91,6 +91,7 @@ def generate_ticket_content(booking):
     ticket_content = f"""
         -------------------------------------
         Booking ID: {booking.booking_id}
+        Booking DATE TIME: {booking.booking_datetime.strftime("%Y-%m-%d %H:%M:%S")}
         Passenger: {booking.passenger.user.username}
         Trip: {booking.tripprice.trip.from_location} to {booking.tripprice.trip.to_location}
         No. of Passengers: {booking.num_passengers}
@@ -109,7 +110,7 @@ class Booking(models.Model):
     tripprice = models.ForeignKey(TripPrice, on_delete=models.CASCADE)
     num_passengers = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-
+    booking_datetime = models.DateTimeField(auto_now_add=True)
     def clean(self):
         if self.num_passengers > self.tripprice.vehicle.available_seat:
             raise serializers.ValidationError("Not enough available seats in the vehicle.")
