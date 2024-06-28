@@ -5,10 +5,11 @@ from rest_framework.response import Response
 from .models import Vehicle, Organization, Driver, Trip, Booking, TripPrice, Ticket
 from authentication.serializers import OrganizationSerializer, DriverSerializer
 from passenger.serializers import PassengerSerializer
+from rest_framework.exceptions import ValidationError
 class VehicleSerializer(serializers.ModelSerializer):
     organization = OrganizationSerializer(read_only=True)
     driver = DriverSerializer(read_only=True)
-    
+
     class Meta:
         model = Vehicle
         fields = '__all__'
@@ -18,7 +19,7 @@ class VehicleSerializer(serializers.ModelSerializer):
         dri_license = self.context.get('dri_license')
         check_driver = self.context.get('check_driver')
 
-        validated_data = self._assign_organization_and_driver(validated_data, org_email, dri_license,check_driver)
+        validated_data = self._assign_organization_and_driver(validated_data, org_email, dri_license, check_driver)
         if isinstance(validated_data, Response):  # Error response from _assign_organization_and_driver
             return validated_data
 
@@ -28,24 +29,28 @@ class VehicleSerializer(serializers.ModelSerializer):
 
         vehicle = Vehicle.objects.create(**validated_data)
         return vehicle
-
-    def _assign_organization_and_driver(self, validated_data, org_email, dri_license,check_driver):
+    
+    def update(self,instance,validated_data):
+        # veh_id = self._generate_random_string()
+        # reg_id = self._generate_registration_number(veh_id,validated_data['organization'].user.username)
+        instance.registration_number = instance.registration_number
+        instance.save()
+        return instance
+    
+    
+    def _assign_organization_and_driver(self, validated_data, org_email, dri_license, check_driver):
         try:
-            if check_driver:
-                # user_dri_check = Vehicle.objects.filter(driver__license_number=dri_license).exists()
-                # if user_dri_check:
-                #     return Response({"message": "Driver already has a vehicle"}, status=status.HTTP_400_BAD_REQUEST)
+            if check_driver and dri_license:
                 driver_license = Driver.objects.get(license_number=dri_license)
                 validated_data['driver'] = driver_license
-            else:
-                return serializers.ValidationError({"message":"Driver not exist related with this organization "}, status=status.HTTP_400_BAD_REQUEST)
+            elif not dri_license:
+                validated_data['driver'] = None  # Handle cases where there is no driver assigned
+
             if org_email:
-                
-                # user_org_check = Driver.objects.filter(organization__user_email=org_email).exists()
-                # if user_org_check:
-                #     return Response({"message": "Organization already has a vehicle"}, status=status.HTTP_400_BAD_REQUEST)
                 org_mail = Organization.objects.get(user__email=org_email)
                 validated_data['organization'] = org_mail
+            else:
+                return ValidationError({"message": "Organization not found"})
 
         except Organization.DoesNotExist:
             return Response({"message": "Organization not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -55,7 +60,7 @@ class VehicleSerializer(serializers.ModelSerializer):
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
         return validated_data
-
+    
     @staticmethod
     def _generate_random_string(length=10):
         characters = string.ascii_letters + string.digits

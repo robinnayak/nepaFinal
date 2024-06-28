@@ -16,51 +16,49 @@ from django.http import HttpResponse
 
 class VehicleView(APIView):
     permission_classes = [IsAuthenticated]
-    
     renderer_classes = [UserRenderer]
-    def get(self,request):
+
+    def get(self, request):
         vehicles = Vehicle.objects.all()
         try:
-            serializer = serializers.VehicleSerializer(vehicles,many=True)
-
-            return Response(serializer.data,status.HTTP_200_OK)
+            serializer = serializers.VehicleSerializer(vehicles, many=True)
+            return Response(serializer.data, status.HTTP_200_OK)
         except Exception as e:
-            return Response(str(e),status.HTTP_400_BAD_REQUEST) 
-        
-    def post(self,request,*args,**kwargs):
-        
+            return Response(str(e), status.HTTP_400_BAD_REQUEST) 
+
+    def post(self, request, *args, **kwargs):
         if request.user.is_organization:
-            dri_license = request.data['license_number']
-            check_driver = Driver.objects.filter(organization__user__email=request.user.email,license_number=dri_license).exists()
-            print("check driver",check_driver)
-            # check_org = Vehicle.objects.filter(organization__user__email=request.user.email,driver__organization__user__email=request.user.email).exists()
+            dri_license = request.data.get('license_number', '')
+            check_driver = False
+
+            if dri_license:
+                check_driver = Driver.objects.filter(
+                    organization__user__email=request.user.email,
+                    license_number=dri_license
+                ).exists()
+
             context = {
-                # 'check_org':check_org,
-                'org_email':request.user.email,
-                'dri_license':dri_license,
+                'org_email': request.user.email,
+                'dri_license': dri_license,
                 'check_driver': check_driver
             }
-            
-            # if check_org:
-            #     return Response({"message":f"This Organization {request.user.email} already has a vehicle with this driver"},status=status.HTTP_400_BAD_REQUEST)
-            
-            serializer = serializers.VehicleSerializer(data=request.data,context=context)
+
+            serializer = serializers.VehicleSerializer(data=request.data, context=context)
             try:
                 if serializer.is_valid():
                     serializer.save()
                     message = {
-                        "message":"Vehicle data retrieved successfully",
-                        "data":serializer.data
+                        "message": "Vehicle created successfully",
+                        "data": serializer.data
                     }
-                    return Response(message,status.HTTP_201_CREATED)
+                    return Response(message, status.HTTP_201_CREATED)
                 else:
                     if 'non_field_errors' in serializer.errors:
-                        return Response(serializer.errors['non_field_errors'],status.HTTP_400_BAD_REQUEST)
+                        return Response(serializer.errors['non_field_errors'], status.HTTP_400_BAD_REQUEST)
                     else:
-                        return Response(serializer.errors,status.HTTP_400_BAD_REQUEST)
+                        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
             except Exception as e:
-                return Response(str(e),status=status.HTTP_400_BAD_REQUEST)
-    
+                return Response(str(e), status.HTTP_400_BAD_REQUEST)    
         
 class VehicleDetailView(APIView):
     permission_classes = [IsAuthenticated]
@@ -80,7 +78,7 @@ class VehicleDetailView(APIView):
             if request.user.is_organization:
                 check_org = Vehicle.objects.filter(organization__user__email=request.user.email).exists()
                 if check_org:
-                    vehicle = Vehicle.objects.get(registration_number=reg_id,organization__user__email=request.user.email)
+                    vehicle = Vehicle.objects.get(organization__user__email=request.user.email,registration_number=reg_id)
                     serializer = serializers.VehicleSerializer(vehicle,data=request.data)
                     if serializer.is_valid():
                         serializer.save()
@@ -119,14 +117,15 @@ class VehicleDetailView(APIView):
             if request.user.is_driver:
                 check_driver = Vehicle.objects.filter(driver__user__email=request.user.email).exists()
                 if check_driver:
-                    vehicle = Vehicle.objects.get(registration_number=reg_id,driver__user__email=request.user.email)
+                    vehicle = Vehicle.objects.get(registration_number=reg_id)
                     vehicle.delete()
                 else:
                     return Response({"message":"Driver does not have a vehicle"},status.HTTP_400_BAD_REQUEST)
             elif request.user.is_organization:
                 check_org = Vehicle.objects.filter(organization__user__email=request.user.email).exists()
                 if check_org:
-                    vehicle = Vehicle.objects.get(registration_number=reg_id)
+                    vehicle = Vehicle.objects.get(organization__user__email=request.user.email,registration_number=reg_id)
+                    
                     vehicle.delete()
                 return Response({"message":"Vehicle deleted successfully"},status.HTTP_200_OK)
         except Vehicle.DoesNotExist:
