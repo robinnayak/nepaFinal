@@ -19,13 +19,42 @@ class VehicleView(APIView):
     renderer_classes = [UserRenderer]
 
     def get(self, request):
-        vehicles = Vehicle.objects.all()
-        try:
-            serializer = serializers.VehicleSerializer(vehicles, many=True)
-            return Response(serializer.data, status.HTTP_200_OK)
-        except Exception as e:
-            return Response(str(e), status.HTTP_400_BAD_REQUEST) 
+        if request.user.is_organization:
+            vehicles = Vehicle.objects.all()
+            try:
+                serializer = serializers.VehicleSerializer(vehicles, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+        elif request.user.is_driver:
+            vehicles = Vehicle.objects.filter(driver__user__email=request.user.email)
+            try:
+                serializer = serializers.VehicleSerializer(vehicles, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+        else:  # For passengers
+            try:
+                vehicles = Vehicle.objects.all()
+                vehicle_ids = vehicles.values_list('id', flat=True)
+                trip_prices = TripPrice.objects.filter(vehicle__id__in=vehicle_ids)
 
+                response_data = []
+                for vehicle in vehicles:
+                    trip_price = trip_prices.filter(vehicle=vehicle).first()
+                    vehicle_data = serializers.VehicleSerializer(vehicle).data
+                    trip_price_data = serializers.TripPriceSerializer(trip_price).data if trip_price else {}
+                    response_data.append({
+                        'vehicle': vehicle_data,
+                        'trip_price': trip_price_data,
+                    })
+
+                return Response(response_data, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
     def post(self, request, *args, **kwargs):
         if request.user.is_organization:
             dri_license = request.data.get('license_number', '')
