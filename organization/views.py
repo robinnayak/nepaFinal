@@ -133,7 +133,20 @@ class VehicleDetailView(APIView):
         except Exception as e:
             return Response(str(e),status.HTTP_400_BAD_REQUEST)
         
-        
+class VehicleFilterView(APIView):
+    def get(self,request):
+        if request.user.is_organization:
+            try:
+                org = Organization.objects.get(user__email=request.user.email)
+                veh = Vehicle.objects.filter(organization=org)
+                serializer = serializers.VehicleSerializer(veh,many=True)
+                return Response(serializer.data,status=status.HTTP_200_OK)
+            except Vehicle.DoesNotExist:
+                return Response({"message":"Vehicle list not found"},status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response(str(e),status=status.HTTP_400_BAD_REQUEST)
+
+   
 class TripView(APIView):
     permission_classes = [IsAuthenticated]
     
