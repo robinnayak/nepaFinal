@@ -98,7 +98,40 @@ class TripPriceSerializer(serializers.ModelSerializer):
         model = TripPrice
         fields = '__all__'
         
+    def create(self,validated_data):
+        trip_id = self.context.get('trip_id')
+        vehicle_registration_number = self.context.get('vehicle_registration_number')
+        org_email = self.context.get('org_email')   
+        try:
+            if trip_id:
+                trip = Trip.objects.get(trip_id=trip_id, organization__user__email=org_email)
+                validated_data['trip'] = trip 
+            else:
+                raise ValidationError({"message": "Trip not found"})
+            if vehicle_registration_number:
+                vehicle = Vehicle.objects.get(registration_number=vehicle_registration_number, organization__user__email=org_email)
+                validated_data['vehicle'] = vehicle
+            else:
+                raise ValidationError({"message": "Vehicle not found"})
+            trip_price = TripPrice.objects.create(**validated_data)
+            return trip_price
+        except Trip.DoesNotExist:
+            return Response({"message": "Trip not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Vehicle.DoesNotExist:
+            return Response({"message": "Vehicle not found"}, status=status.HTTP_404_NOT_FOUND)
         
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+    def update(self, instance, validated_data):
+        validated_data.pop('trip',None)
+        validated_data.pop('vehicle',None)
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+            
+        instance.save()
+        return instance
 class BookingSerializer(serializers.ModelSerializer):
     passennger = PassengerSerializer(read_only=True)
     trip_price = TripPriceSerializer(read_only=True)

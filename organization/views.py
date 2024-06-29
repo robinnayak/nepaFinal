@@ -231,20 +231,33 @@ class TripPriceView(APIView):
             return Response(str(e),status.HTTP_400_BAD_REQUEST)
         
     def post(self,request):
-        serializer = serializers.TripPriceSerializer(data=request.data)
+        trip_id = request.data.get('trip_id','')
+        vehicle_registration_number = request.data.get('vehicle_registration_number','')
+        
         try:
-            if serializer.is_valid():
-                serializer.save()
-                message = {
-                    "message":"Trip Price data retrieved successfully",
-                    "data":serializer.data
+            if trip_id and vehicle_registration_number:
+                
+                context = {
+                    'trip_id':trip_id,
+                    'vehicle_registration_number':vehicle_registration_number,
+                    'org_email':request.user.email,
                 }
-                return Response(message,status.HTTP_201_CREATED)
-            else:
-                if 'non_field_errors' in serializer.errors:
-                    return Response(serializer.errors['non_field_errors'],status.HTTP_400_BAD_REQUEST)
+                serializer = serializers.TripPriceSerializer(data=request.data,context=context)
+                if serializer.is_valid():
+                    serializer.save()
+                    message = {
+                        "message":"Trip Price data retrieved successfully",
+                        "data":serializer.data
+                    }
+                    return Response(message,status.HTTP_201_CREATED)
                 else:
-                    return Response(serializer.errors,status.HTTP_400_BAD_REQUEST)
+                    if 'non_field_errors' in serializer.errors:
+                        return Response(serializer.errors['non_field_errors'],status.HTTP_400_BAD_REQUEST)
+                    else:
+                        return Response(serializer.errors,status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({"message":"Trip ID and Vehicle Registration Number required"},status.HTTP_400_BAD_REQUEST)
+            
         except Exception as e:
             return Response(str(e),status.HTTP_400_BAD_REQUEST)
         
@@ -263,7 +276,7 @@ class TripPriceDetailView(APIView):
         
     def put(self,request,trip_price_id):
         try:
-            trip_price = TripPrice.objects.get(trip_price_id=trip_price_id, trip__organization__user__username=request.user.username, trip__vehicle__organization__user__username=request.user.username)
+            trip_price = TripPrice.objects.get(trip_price_id=trip_price_id)
             
             serializer = serializers.TripPriceSerializer(trip_price,data=request.data)
             if serializer.is_valid():
@@ -282,7 +295,7 @@ class TripPriceDetailView(APIView):
         
     def delete(self,request,trip_price_id):
         try:
-            trip_price = TripPrice.objects.get(trip_price_id=trip_price_id, trip__organization__user__username=request.user.username, trip__vehicle__organization__user__username=request.user.username)
+            trip_price = TripPrice.objects.get(trip_price_id=trip_price_id)
             trip_price.delete()
             return Response({"message":"Trip Price deleted successfully"},status.HTTP_200_OK)
         except TripPrice.DoesNotExist:
