@@ -11,6 +11,8 @@ urlpatterns = [
     path('trip/<str:trip_id>/',views.TripDetailView.as_view(), name='trip_detail' ),
     path('price-trip/<str:trip_id>/',views.TripPriceTripView.as_view(), name='price_trip' ),
     
+    path('trip-filter-org/',views.TripFilterView.as_view(), name='trip_filter_org' ),
+    
     path('tripprice/',views.TripPriceView.as_view(), name='tripprice' ),
     path('tripprice/<str:trip_price_id>/',views.TripPriceDetailView.as_view(), name='tripprice_detail' ),
     path('booking/',views.BookingView.as_view(), name='booking' ),
