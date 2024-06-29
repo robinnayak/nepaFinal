@@ -72,8 +72,8 @@ class Trip(models.Model):
 
 class TripPrice(models.Model):
     trip_price_id = models.CharField(max_length=100, unique=True, default="POKKATABC123")
-    trip = models.ForeignKey(Trip, on_delete=models.CASCADE)
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
+    trip = models.OneToOneField(Trip, on_delete=models.CASCADE, related_query_name="trip_price_trip")
+    vehicle = models.OneToOneField(Vehicle, on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def save(self, *args, **kwargs):

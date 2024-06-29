@@ -261,6 +261,19 @@ class TripPriceView(APIView):
         except Exception as e:
             return Response(str(e),status.HTTP_400_BAD_REQUEST)
         
+class TripPriceTripView(APIView):
+    def get(self,request,trip_id):
+        try:
+            trip = Trip.objects.get(trip_id=trip_id, organization__user__username=request.user.username)
+            trip_price = TripPrice.objects.get(trip=trip)
+            serializer = serializers.TripPriceSerializer(trip_price)
+            return Response(serializer.data,status.HTTP_200_OK)
+        except Trip.DoesNotExist:
+            return Response({"message":"Trip not found"},status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(str(e),status.HTTP_400_BAD_REQUEST)
+        
+        
 class TripPriceDetailView(APIView):
     permission_classes = [IsAuthenticated]
     
