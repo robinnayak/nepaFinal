@@ -373,8 +373,14 @@ class BookingView(APIView):
         except Exception as e:
             return Response(str(e),status.HTTP_400_BAD_REQUEST)
         
-    def post(self,request):
-        serializer = serializers.BookingSerializer(data=request.data)
+    def post(self,request):   
+        trip_price_id = request.data.get('trip_price_id','')
+        context = { 
+            'passenger_email':request.user.email,
+            'trip_price_id':trip_price_id,
+            
+        }
+        serializer = serializers.BookingSerializer(data=request.data,context=context)
         try:
             if serializer.is_valid():
                 serializer.save()

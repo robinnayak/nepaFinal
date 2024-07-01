@@ -8,7 +8,7 @@ from passenger.models import Passenger
 import os
 import random
 import string
-
+from django.core.exceptions import ValidationError
 
 class Vehicle(models.Model):
     REGISTRATION_CHOICES = (
@@ -103,6 +103,7 @@ def generate_ticket_content(booking):
     return ticket_content
 
 
+
 class Booking(models.Model):
     booking_id = models.CharField(max_length=200, unique=True, default="passenger2JANKATXYZ1234")
     passenger = models.ForeignKey(Passenger, on_delete=models.CASCADE)
@@ -110,21 +111,22 @@ class Booking(models.Model):
     num_passengers = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     booking_datetime = models.DateTimeField(auto_now_add=True)
+
     def clean(self):
         if self.num_passengers > self.tripprice.vehicle.available_seat:
-            raise serializers.ValidationError("Not enough available seats in the vehicle.")
+            raise ValidationError("Not enough available seats in the vehicle.")
 
     def save(self, *args, **kwargs):
-        print("vehicle available seat",self.tripprice.vehicle.available_seat)   
+        print("vehicle available seat", self.tripprice.vehicle.available_seat)
         self.clean()
         self.price = self.tripprice.price * self.num_passengers
         self.tripprice.vehicle.available_seat -= self.num_passengers
         self.tripprice.vehicle.save()
         print("=====================================")
-        print("trip price",self.tripprice)
-        print("trip price",self.price)
-        print("trip price vehicle",self.tripprice.vehicle.available_seat)
-        print("trip price vehicle",self.tripprice.vehicle.seating_capacity)
+        print("trip price", self.tripprice)
+        print("trip price", self.price)
+        print("trip price vehicle", self.tripprice.vehicle.available_seat)
+        print("trip price vehicle", self.tripprice.vehicle.seating_capacity)
         print("=====================================")
 
         prefix = f"{self.passenger.user.username}_{self.num_passengers}_{self.tripprice.trip_price_id}"
@@ -134,16 +136,21 @@ class Booking(models.Model):
 
         ticket_content = generate_ticket_content(self)
         filename = f"{self.booking_id}.txt"
-        ticket_file_path = os.path.join(settings.MEDIA_ROOT, 'tickets', filename)
-        print("ticket file path",ticket_file_path)
+        ticket_dir = os.path.join(settings.MEDIA_ROOT, 'tickets')
+        ticket_file_path = os.path.join(ticket_dir, filename)
+        print("ticket file path", ticket_file_path)
+
+        # Ensure the directory exists
+        if not os.path.exists(ticket_dir):
+            os.makedirs(ticket_dir)
 
         try:
-            with open(ticket_file_path, 'w+') as ticket_file:
+            with open(ticket_file_path, 'w') as ticket_file:
                 ticket_file.write(ticket_content)
+            print("ticket file created")
+            Ticket.objects.create(booking=self, ticket_file=ticket_file_path)
         except Exception as e:
-            raise serializers.ValidationError(f"Error creating ticket file: {str(e)}")
-
-        Ticket.objects.create(booking=self, ticket_file=ticket_file_path)
+            raise ValidationError(f"Error creating ticket file: {str(e)}")
 
     def __str__(self):
         return f"Booking for {self.passenger.user.username} on {self.tripprice.vehicle.registration_number} - {self.tripprice.trip.from_location} to {self.tripprice.trip.to_location}"
@@ -152,14 +159,13 @@ class Booking(models.Model):
 class Ticket(models.Model):
     ticket_id = models.CharField(max_length=200, unique=True, default="passenger2JANKATXYZ1234")
     booking = models.OneToOneField(Booking, on_delete=models.CASCADE)
-    ticket_file = models.FileField()
-    
+    ticket_file = models.FileField(max_length=200)  # Increased max_length to 200
+
     def save(self, *args, **kwargs):
         prefix = f"{self.booking.passenger.user.username}_{self.booking.num_passengers}_{self.booking.tripprice.trip_price_id}"
         timestamp = timezone.now().strftime("%Y%m%d%H%M%S")
         self.ticket_id = f"{prefix}_{timestamp}".upper()
-        super().save(*args, **kwargs )
-        
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Ticket for {self.booking.tripprice.vehicle.registration_number} - {self.booking.tripprice.trip.from_location} to {self.booking.tripprice.trip.to_location}"

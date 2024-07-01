@@ -6,6 +6,7 @@ from .models import Vehicle, Organization, Driver, Trip, Booking, TripPrice, Tic
 from authentication.serializers import OrganizationSerializer, DriverSerializer
 from passenger.serializers import PassengerSerializer
 from rest_framework.exceptions import ValidationError
+from passenger.models import Passenger
 class VehicleSerializer(serializers.ModelSerializer):
     organization = OrganizationSerializer(read_only=True)
     driver = DriverSerializer(read_only=True)
@@ -133,12 +134,30 @@ class TripPriceSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 class BookingSerializer(serializers.ModelSerializer):
-    passennger = PassengerSerializer(read_only=True)
-    trip_price = TripPriceSerializer(read_only=True)
+    passenger = PassengerSerializer(read_only=True)
+    tripprice = TripPriceSerializer(read_only=True)
     class Meta:
         model = Booking
         fields = '__all__'
         
+    def create(self, validated_data):   
+        validated_data.pop('tripprice',None)
+        validated_data.pop('passenger',None)
+        passenger_email = self.context.get('passenger_email')
+        trip_price_id = self.context.get('trip_price_id')
+        try:
+            passenger = Passenger.objects.get(user__email=passenger_email)
+            validated_data['passenger'] = passenger
+        except Passenger.DoesNotExist:
+            return Response({"message": "Passenger not found"}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            trip_price = TripPrice.objects.get(trip_price_id=trip_price_id)
+            validated_data['tripprice'] = trip_price
+            
+        except TripPrice.DoesNotExist:
+            return Response({"message": "Trip Price not found"}, status=status.HTTP_404_NOT_FOUND)
+        booking = Booking.objects.create(**validated_data)
+        return booking
     
 class TicketSerializer(serializers.ModelSerializer):
     booking = BookingSerializer(read_only=True)
