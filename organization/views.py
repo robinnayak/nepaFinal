@@ -308,7 +308,7 @@ class TripPriceDetailView(APIView):
     
     def get(self,request,trip_price_id):
         try:
-            trip_price = TripPrice.objects.get(trip_price_id=trip_price_id, trip__organization__user__username=request.user.username, vehicle__organization__user__username=request.user.username)
+            trip_price = TripPrice.objects.get(trip_price_id=trip_price_id)
             serializer = serializers.TripPriceSerializer(trip_price)
             return Response(serializer.data,status.HTTP_200_OK)
         except TripPrice.DoesNotExist:
@@ -318,7 +318,8 @@ class TripPriceDetailView(APIView):
         
     def put(self,request,trip_price_id):
         try:
-            trip_price = TripPrice.objects.get(trip_price_id=trip_price_id)
+            trip_price = TripPrice.objects.get(trip_price_id=trip_price_id, trip__organization__user__username=request.user.username, vehicle__organization__user__username=request.user.username)
+            # trip_price = TripPrice.objects.get(trip_price_id=trip_price_id)
             
             serializer = serializers.TripPriceSerializer(trip_price,data=request.data)
             if serializer.is_valid():
@@ -337,7 +338,8 @@ class TripPriceDetailView(APIView):
         
     def delete(self,request,trip_price_id):
         try:
-            trip_price = TripPrice.objects.get(trip_price_id=trip_price_id)
+            trip_price = TripPrice.objects.get(trip_price_id=trip_price_id, trip__organization__user__username=request.user.username, vehicle__organization__user__username=request.user.username)
+            # trip_price = TripPrice.objects.get(trip_price_id=trip_price_id)
             trip_price.delete()
             return Response({"message":"Trip Price deleted successfully"},status.HTTP_200_OK)
         except TripPrice.DoesNotExist:
