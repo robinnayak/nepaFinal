@@ -145,7 +145,7 @@ class Booking(models.Model):
             os.makedirs(ticket_dir)
 
         try:
-            with open(ticket_file_path, 'w+') as ticket_file:
+            with open(ticket_file_path, 'w') as ticket_file:
                 ticket_file.write(ticket_content)
             print("ticket file created")
             Ticket.objects.create(booking=self, ticket_file=ticket_file_path)
