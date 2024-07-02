@@ -1,0 +1,13 @@
+
+        -------------------------------------
+        Booking ID: ARUN_1_20240701072715_20240702042925
+        Booking DATE TIME: 2024-07-02 04:29:25
+        Passenger: Arun
+        Trip: Dharan to Kathmandu
+        No. of Passengers: 1
+        Price per Person: 1400.00
+        Total Price: 1400.00
+        Trip Date: 2024-06-28 08:19:18
+        Ticket Booked Time: 2024-07-02 04:29:25
+        -------------------------------------
+    

@@ -9,7 +9,7 @@ import os
 import random
 import string
 from django.core.exceptions import ValidationError
-
+from django.core.files.base import ContentFile
 class Vehicle(models.Model):
     REGISTRATION_CHOICES = (
         ('car', 'Car'),
@@ -87,6 +87,14 @@ class TripPrice(models.Model):
 
 
 def generate_ticket_content(booking):
+    datetime_str = booking.booking_datetime.strftime("%Y-%m-%d %H:%M:%S")
+    date_part = datetime_str[:10]
+    time_part = datetime_str[11:19]
+    print("datetime str",datetime_str)
+    print("booking part",booking.booking_datetime)    
+    print("date part",date_part)
+    print("time part",time_part)
+    
     ticket_content = f"""
         -------------------------------------
         Booking ID: {booking.booking_id}
@@ -101,7 +109,6 @@ def generate_ticket_content(booking):
         -------------------------------------
     """
     return ticket_content
-
 
 
 class Booking(models.Model):
@@ -155,11 +162,10 @@ class Booking(models.Model):
     def __str__(self):
         return f"Booking for {self.passenger.user.username} on {self.tripprice.vehicle.registration_number} - {self.tripprice.trip.from_location} to {self.tripprice.trip.to_location}"
 
-
 class Ticket(models.Model):
     ticket_id = models.CharField(max_length=200, unique=True, default="passenger2JANKATXYZ1234")
     booking = models.OneToOneField(Booking, on_delete=models.CASCADE)
-    ticket_file = models.FileField(max_length=200)  # Increased max_length to 200
+    ticket_file = models.FileField(upload_to='tickets/', max_length=200)
 
     def save(self, *args, **kwargs):
         prefix = f"{self.booking.passenger.user.username}_{self.booking.num_passengers}_{self.booking.tripprice.trip_price_id}"
