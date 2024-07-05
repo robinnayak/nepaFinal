@@ -136,7 +136,7 @@ class Booking(models.Model):
         print("trip price vehicle", self.tripprice.vehicle.seating_capacity)
         print("=====================================")
 
-        prefix = f"{self.passenger.user.username}_{self.num_passengers}_{self.tripprice.trip_price_id}"
+        prefix = f"{self.passenger.user.username}"
         timestamp = timezone.now().strftime("%Y%m%d%H%M%S")
         self.booking_id = f"{prefix}_{timestamp}".upper()
         super().save(*args, **kwargs)

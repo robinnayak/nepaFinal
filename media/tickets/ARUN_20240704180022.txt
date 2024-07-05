@@ -1,0 +1,13 @@
+
+        -------------------------------------
+        Booking ID: ARUN_20240704180022
+        Booking DATE TIME: 2024-07-04 18:00:22
+        Passenger: Arun
+        Trip: Pokhara to Kathmandu
+        No. of Passengers: 1
+        Price per Person: 700.00
+        Total Price: 700.00
+        Trip Date: 2024-06-28 18:35:57
+        Ticket Booked Time: 2024-07-04 18:00:22
+        -------------------------------------
+    

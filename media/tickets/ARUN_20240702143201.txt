@@ -1,0 +1,13 @@
+
+        -------------------------------------
+        Booking ID: ARUN_20240702143201
+        Booking DATE TIME: 2024-07-02 14:32:01
+        Passenger: Arun
+        Trip: Kathmandu to Janakpur
+        No. of Passengers: 2
+        Price per Person: 1600.00
+        Total Price: 3200.00
+        Trip Date: 2024-06-28 07:40:10
+        Ticket Booked Time: 2024-07-02 14:32:02
+        -------------------------------------
+    
