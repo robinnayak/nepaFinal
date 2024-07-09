@@ -91,7 +91,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     #custom middleware to update date automatically 
-    'organization.middleware.UpdateTripDatesMiddleware',
+    # 'organization.middleware.UpdateTripDatesMiddleware',
 ]
 
 REST_FRAMEWORK = {
