@@ -10,6 +10,7 @@ import random
 import string
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from datetime import timedelta
 class Vehicle(models.Model):
     REGISTRATION_CHOICES = (
         ('car', 'Car'),
@@ -65,6 +66,11 @@ class Trip(models.Model):
         timestamp = prefix + timezone.now().strftime("%Y%m%d%H%M%S")
         self.trip_id = timestamp.upper()
         super().save(*args, **kwargs)
+        
+    def update_start_and_end_date_time(self):
+        self.start_datetime += timedelta(hours=24)
+        self.end_datetime = self.start_datetime + timedelta(hours=6)
+        self.save()
 
     def __str__(self):
         return f"{self.trip_id} - {self.start_datetime}"
@@ -136,7 +142,7 @@ class Booking(models.Model):
         print("trip price vehicle", self.tripprice.vehicle.seating_capacity)
         print("=====================================")
 
-        prefix = f"{self.passenger.user.username}"
+        prefix = f"{self.passenger.user.username}_{self.num_passengers}_{self.tripprice.trip_price_id}"
         timestamp = timezone.now().strftime("%Y%m%d%H%M%S")
         self.booking_id = f"{prefix}_{timestamp}".upper()
         super().save(*args, **kwargs)

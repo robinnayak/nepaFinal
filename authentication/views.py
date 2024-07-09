@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView    
 # Create your views here.
 from .models import CustomUser
-from .serializers import CustomUserSerializer,CustomUserLoginSerializer,OrganizationSerializer,DriverSerializer,LocationSerializer
+from .serializers import CustomUserSerializer,CustomUserLoginSerializer,OrganizationSerializer,DriverSerializer
 from .renderers import UserRenderer 
 from django.contrib.auth import authenticate,login,logout
 
@@ -14,7 +14,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import Group 
 from . import models
 from passenger.models import Passenger
-from django.utils import timezone
+
 
 def get_tokens_for_user(user):
     refersh = RefreshToken.for_user(user)
@@ -262,29 +262,3 @@ class OrganizationDriverView(APIView):
             return Response({"error": "You are not authorized to view this resource"}, status=status.HTTP_403_FORBIDDEN)
         
         
-
-class LocationView(APIView):
-    def get(self,request):
-        locations = models.Location.objects.all()
-        serializer = LocationSerializer(locations,many=True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
-    
-    def post(self,request):
-        if request.user:
-            print("request user",request.user)    
-            username = request.user.username 
-            print("username",username)
-            context = {
-                "username" :username
-            }     
-            serializer = LocationSerializer(data=request.data,context=context)
-            if serializer.is_valid():
-                serializer.save()
-                message = {
-                    'message': 'Location created successfully',
-                    'location': serializer.data
-                }
-                return Response(message, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    
