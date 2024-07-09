@@ -16,10 +16,8 @@ urlpatterns = [
     path('tripprice/',views.TripPriceView.as_view(), name='tripprice' ),
     path('tripprice/<str:trip_price_id>/',views.TripPriceDetailView.as_view(), name='tripprice_detail' ),
     path('booking/',views.BookingView.as_view(), name='booking' ),
-    path('booking-filter/',views.BookingFilterView.as_view(), name='booking_filter' ),
     path('booking/<str:booking_id>/',views.BookingDetailView.as_view(), name='booking_detail' ),
     path('ticket/',views.TicketView.as_view(), name='ticket' ),
     path('ticket/<str:ticket_id>/',views.TicketDetailView.as_view(), name='ticket_detail' ),
     path('driver/',OrganizationDriverView.as_view(), name='driver' ),
-    path('ticket-filter-notification/',views.TicketFilterView.as_view(), name='ticket_filter_notification' ),
 ]

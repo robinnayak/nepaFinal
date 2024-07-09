@@ -174,16 +174,7 @@ class VehicleFilterView(APIView):
                 return Response({"message":"Vehicle list not found"},status=status.HTTP_404_NOT_FOUND)
             except Exception as e:
                 return Response(str(e),status=status.HTTP_400_BAD_REQUEST)
-        if request.user.is_driver:
-            try:
-                driver = Driver.objects.get(user__email=request.user.email)
-                veh = Vehicle.objects.filter(driver=driver)
-                serializer = serializers.VehicleSerializer(veh,many=True)
-                return Response(serializer.data,status=status.HTTP_200_OK)
-            except Vehicle.DoesNotExist:
-                return Response({"message":"Vehicle list not found"},status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response(str(e),status=status.HTTP_400_BAD_REQUEST)
+
    
 class TripView(APIView):
     permission_classes = [IsAuthenticated]
@@ -357,7 +348,6 @@ class TripPriceDetailView(APIView):
             return Response(str(e),status.HTTP_400_BAD_REQUEST)
 
 class TripFilterView(APIView):
-    permission_classes = [IsAuthenticated]
     def get (self,request):
         if request.user.is_organization:
             try:
@@ -369,22 +359,9 @@ class TripFilterView(APIView):
                 return Response({"message":"Trip list not found"},status=status.HTTP_404_NOT_FOUND)
             except Exception as e:
                 return Response(str(e),status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message":"User is not an organization"},status.HTTP_400_BAD_REQUEST)
         
-        if request.user.is_driver:
-            print("trip driver")
-            try:
-                driver = Driver.objects.get(user__email=request.user.email)
-                org = Organization.objects.get(user__email=driver.organization.user.email)
-                trip = Trip.objects.filter(organization=org)
-                print("trip",trip)
-                serializer = serializers.TripSerializer(trip,many=True)
-                return Response(serializer.data,status=status.HTTP_200_OK)
-            except Trip.DoesNotExist:
-                return Response({"message":"Trip list not found"},status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response(str(e),status=status.HTTP_400_BAD_REQUEST)  
-            
-#need to remove get method from here       
 class BookingView(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -419,38 +396,7 @@ class BookingView(APIView):
                     return Response(serializer.errors,status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(str(e),status.HTTP_400_BAD_REQUEST)
-
-
-class BookingFilterView(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self,request):
-        if request.user.is_organization:
-            try:
-                booking = Booking.objects.filter(tripprice__trip__organization__user__username=request.user.username)
-                serializer = serializers.BookingSerializer(booking,many=True)
-                return Response(serializer.data,status=status.HTTP_200_OK)
-            except Booking.DoesNotExist:
-                return Response({"message":"Booking list not found"},status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response(str(e),status=status.HTTP_400_BAD_REQUEST)
-        if request.user.is_driver:
-            try:
-                booking = Booking.objects.filter(tripprice__vehicle__driver__user__username=request.user.username)
-                serializer = serializers.BookingSerializer(booking,many=True)
-                return Response(serializer.data,status=status.HTTP_200_OK)
-            except Booking.DoesNotExist:
-                return Response({"message":"Booking list not found"},status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response(str(e),status=status.HTTP_400_BAD_REQUEST)
-        else:
-            try:
-                booking = Booking.objects.filter(passenger__user__username=request.user.username)
-                serializer = serializers.BookingSerializer(booking,many=True)
-                return Response(serializer.data,status=status.HTTP_200_OK)
-            except Booking.DoesNotExist:
-                return Response({"message":"Booking list not found"},status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response(str(e),status=status.HTTP_400_BAD_REQUEST)
+        
 class BookingDetailView(APIView):
     permission_classes = [IsAuthenticated]
     
@@ -587,33 +533,4 @@ class TicketDetailView(APIView):
 
 
 
-class TicketFilterView(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self,request):
-        if request.user.is_driver:
-            try:
-                ticket = Ticket.objects.filter(booking__tripprice__vehicle__driver__user__username=request.user.username)
-                serializer = serializers.TicketSerializer(ticket,many=True)
-                return Response(serializer.data,status=status.HTTP_200_OK)
-            except Ticket.DoesNotExist:
-                return Response({"message":"Ticket list not found"},status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response(str(e),status=status.HTTP_400_BAD_REQUEST)
-        elif request.user.is_organization:
-            try:
-                ticket = Ticket.objects.filter(booking__tripprice__trip__organization__user__username=request.user.username)
-                serializer = serializers.TicketSerializer(ticket,many=True)
-                return Response(serializer.data,status=status.HTTP_200_OK)
-            except Ticket.DoesNotExist:
-                return Response({"message":"Ticket list not found"},status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response(str(e),status=status.HTTP_400_BAD_REQUEST)
-        else:
-            try:
-                ticket = Ticket.objects.filter(booking__passenger__user__username=request.user.username)
-                serializer = serializers.TicketSerializer(ticket,many=True)
-                return Response(serializer.data,status=status.HTTP_200_OK)
-            except Ticket.DoesNotExist:
-                return Response({"message":"Ticket list not found"},status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response(str(e),status=status.HTTP_400_BAD_REQUEST)
+

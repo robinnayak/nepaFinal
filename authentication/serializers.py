@@ -1,5 +1,5 @@
 from  rest_framework import serializers
-from .models  import CustomUser,Organization,Driver,Location
+from .models  import CustomUser,Organization,Driver
 from django.contrib.auth.hashers import check_password
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -113,8 +113,11 @@ class OrganizationSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)   
   
 class DriverSerializer(serializers.ModelSerializer):
+
+    
+    
     user = CustomUserSerializer(read_only=True)
-    organization = OrganizationSerializer(read_only=True)
+    
     class Meta:
         model = Driver
         fields = '__all__'
@@ -141,27 +144,3 @@ class DriverSerializer(serializers.ModelSerializer):
     
         
 
-class LocationSerializer(serializers.ModelSerializer):
-    user = CustomUserSerializer(read_only=True)
-    class Meta:
-        model = Location
-        fields = '__all__'
-        
-    def create(self, validated_data):
-        # validated_data.pop('user')
-        username = self.context['username']
-        print("user1",username)
-        latitude = validated_data['latitude']
-        longitude = validated_data['longitude']
-        heading = validated_data['heading']
-        user = CustomUser.objects.get(username=username)
-        location, created = Location.objects.update_or_create(
-            user=user,
-            latitude=latitude,
-            longitude=longitude,
-            heading=heading
-        )
-        return location
-    
-    
-    

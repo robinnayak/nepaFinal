@@ -1,6 +1,6 @@
 from django.urls import path,include
 from . import views
-from authentication.views import  OrganizationDetailView,RegistrationView,LoginView,LogoutView,OrganizationView,DriverDetailView,LocationView
+from authentication.views import  OrganizationDetailView,RegistrationView,LoginView,LogoutView,OrganizationView,DriverDetailView
 from organization.views import VehicleView
 
 urlpatterns = [
@@ -11,7 +11,5 @@ urlpatterns = [
     path('organization/',include('organization.urls'), name='organizationss'),
     path('passenger/',include('passenger.urls'), name='passenger'),
     # path('vehicle/',VehicleView.as_view(), name='vehicle' ),
-    path('driver/<int:pk>/',DriverDetailView.as_view(), name='organiztion-driver-detail'),
-    path('driver/',include('driver.urls'),name="driver"),
-    path('location/',LocationView.as_view(),name="location"),
+    path('driver/<int:pk>/',include('driver.urls'), name='driver'),
 ]

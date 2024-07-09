@@ -101,13 +101,4 @@ class Organization(models.Model):
     def __str__(self) -> str:
         return self.user.username
     
-
-class Location(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='location')
-    latitude = models.DecimalField(max_digits=9, decimal_places=6)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6)
-    heading = models.DecimalField(max_digits=5, decimal_places=1, blank=True, null=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Location of {self.user.username} at {self.timestamp}"
+    
