@@ -70,7 +70,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self) -> str:
         return self.username
-    
+
 class Driver(models.Model):     
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE, blank=True, null=True, related_query_name='driver_organization')

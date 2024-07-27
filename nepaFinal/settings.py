@@ -4,9 +4,13 @@ import dj_database_url
 from decouple import config
 from datetime import timedelta
 import os
+<<<<<<< HEAD
 import firebase_admin
 from firebase_admin import credentials,storage
 from google.oauth2 import service_account
+=======
+
+>>>>>>> aa02306 (push notificaton updated)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -192,4 +196,11 @@ SIMPLE_JWT = {
     "TOKEN_TYPE_CLAIM": "token_type",
     "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
     "JTI_CLAIM": "jti",
+<<<<<<< HEAD
 }
+=======
+}
+
+if not MEDIA_URL or not MEDIA_ROOT:
+    raise ValueError("MEDIA_URL and MEDIA_ROOT must be set in the environment variables.")
+>>>>>>> aa02306 (push notificaton updated)

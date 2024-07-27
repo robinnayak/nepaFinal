@@ -14,4 +14,3 @@ class PassengerSerializer(serializers.ModelSerializer):
         
         
         
-        

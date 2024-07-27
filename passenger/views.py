@@ -7,6 +7,15 @@ from .serializers import PassengerSerializer
 from rest_framework.permissions import IsAuthenticated 
 # Create your views here.
 from passenger.AI.ai_db_chatbot import DatabaseChatbot
+<<<<<<< HEAD
+=======
+#models 
+from authentication.models import CustomUser,Driver,Organization
+from django.http import JsonResponse
+import re
+import datetime
+from dateutil import parser
+>>>>>>> aa02306 (push notificaton updated)
 class PassengerView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self,request):
@@ -16,7 +25,8 @@ class PassengerView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response({'error':'You are not a passenger'}, status=status.HTTP_400_BAD_REQUEST)
-            
+
+             
 class PassengerChatbotView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self,request):

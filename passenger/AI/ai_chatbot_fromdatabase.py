@@ -1,57 +1,49 @@
 from decouple import config
 from sqlalchemy import create_engine
-from langchain_openai import OpenAI
-from langchain_community.utilities import SQLDatabase
-from langchain.chains  import sql_database
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
+import requests
 import os
-from langchain_openai import ChatOpenAI
-from query_generator import QueryGenerator
 
-
-openai_api_key = config('OPENAI_API_KEY', default=None)
-os.environ["OPENAI_API_KEY"] = openai_api_key
-
-template = """
-    Based on the table schema, the following SQL query can be used to retrieve the requested information:
-    {schema}
-    
-    Question:{question}
-    SQL Query: 
-    
-"""
-
-prompt = ChatPromptTemplate.from_template(template)
-
-pro =prompt.format(schema="my schema", question="How many vehicles are there in the database?")
+# Load database URL from environment variables
 db_uri = config('DATABASE_URL', default=None)
-db = SQLDatabase.from_uri(db_uri)
 
-data = db.run("select * from organization_vehicle")
+# Connect to the database using SQLAlchemy
+engine = create_engine(db_uri)
 
-def get_schema(_):
-    return db.get_table_info()
+class QueryGenerator:
+  def __init__(self, api_key):
+    self.api_key = api_key
 
+  def generate_query(self, question):
+    headers = {
+      "Authorization": f"Bearer {self.api_key}",  # Replace with actual authorization format
+      "Content-Type": "application/json"
+    }
+    payload = {
+      "prompt": question,
+      "max_tokens": 150  # Adjust max tokens as needed
+    }
+    # Replace with actual Gemini AI API endpoint URL
+    url = "https://<your_gemini_ai_endpoint>/v1/generate_query"  # Placeholder for actual URL
+    response = requests.post(url, headers=headers, json=payload)
+    if response.status_code == 200:
+      query = response.json().get("query", "")
+      return query
+    else:
+      print("Error:", response.json())
+      return None
 
-template = """
-    Based on the table schema, the following SQL query can be used to retrieve the requested information:
-    {schema}
-    
-    Question:{question}
-    SQL Query: {query}
-    SQL Response : {response}
-    """
+def run_query(engine, query):
+  with engine.connect() as connection:
+    result = connection.execute(query)
+    return result.fetchall()
 
-prompt = ChatPromptTemplate.from_template(template)
+# Example usage (replace with actual API key)
+query_generator = QueryGenerator(api_key="<your_gemini_ai_api_key>")
+question = "How many vehicles are there in the database?"
+query = query_generator.generate_query(question)
 
-def run_query(query):
-    response = db.run(query)
-    return response
-
-# query = "select * from organization_vehicle"
-query = QueryGenerator().generate_query("How many vehicle are there in the database?")
-
-response = run_query(query)
-print("Response: ", response)   
+if query:
+  response = run_query(engine, query)
+  print("Response:", response)
+else:
+  print("Failed to generate query.")

@@ -1,5 +1,5 @@
 from django.db import models
-from authentication.models import CustomUser
+from authentication.models import CustomUser,Driver, Organization
 # Create your models here.
 CHOICES = [
     ('en','English'),
@@ -17,3 +17,6 @@ class Passenger(models.Model):
     
     def __str__(self) -> str:
         return self.user.username
+
+
+    
