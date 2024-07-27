@@ -12,6 +12,9 @@
         "src": "/(.*)",
         "dest": "nepaFinal/wsgi.py"
       }
-    ]
+    ],
+    "middleware": {
+      "toolbar": false
+    }
   }
   
