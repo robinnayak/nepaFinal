@@ -21,7 +21,7 @@ SECRET_KEY = 'django-insecure-w%%5(=(^inejev)qg59(0!n=59001dw2f_h*+$cq2c!m)y3w(b
 # DEBUG = config('DEBUG', default=True, cast=bool)
 
 DEBUG = True
-ALLOWED_HOSTS = ['localhost', '10.0.2.2', '.vercel.app']
+ALLOWED_HOSTS = ['localhost', '10.0.2.2', '.vercel.app','now.sh']
 # ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
 # CSRF_TRUSTED_ORIGINS = ['https://nepafinal.vercel.app/']
 
@@ -101,8 +101,8 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / "staticfiles_build" / "static"
+STATICFILES_DIRS = os.path.join(BASE_DIR, 'static'),
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
